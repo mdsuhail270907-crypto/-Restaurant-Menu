@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ember & Oak — Menu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* ══ Reset & Base ══ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    :root {
+      --bg:       #130f08;
+      --surface:  #1e1710;
+      --surface2: #261e12;
+      --gold:     #c9a84c;
+      --gold-lt:  #e8cc88;
+      --burgundy: #7a1628;
+      --burg-lt:  #a82040;
+      --cream:    #f2eacc;
+      --warm:     #d4c5a0;
+      --muted:    #7a6e54;
+      --border:   rgba(201,168,76,0.12);
+      --radius:   12px;
+      --trans:    0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--bg);
+      color: var(--cream);
+      min-height: 100vh;
+      cursor: default;
+    }
+
+    /* ══ Scrollbar ══ */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+    /* ══ HERO / HEADER ══ */
+    .hero {
+      position: relative;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      padding: 60px 24px 80px;
+    }
+
+    /* fire-like gradient background */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 100%, rgba(122,22,40,0.55) 0%, transparent 70%),
+        radial-gradient(ellipse 80% 60% at 30% 80%,  rgba(201,168,76,0.1) 0%, transparent 60%),
+        linear-gradient(180deg, #130f08 0%, #1e120a 60%, #2a160c 100%);
+      z-index: 0;
+    }
+
+    /* floating ember particles */
+    .embers {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .ember {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: 0;
+      animation: float-up var(--dur, 6s) var(--delay, 0s) infinite ease-in;
+    }
+    @keyframes float-up {
+      0%   { transform: translateY(0) scale(1);   opacity: 0; }
+      10%  { opacity: 0.6; }
+      80%  { opacity: 0.2; }
+      100% { transform: translateY(-400px) scale(0.2); opacity: 0; }
+    }
+
+    .hero-content { position: relative; z-index: 2; }
+
+    .hero-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      opacity: 0.85;
+    }
+
+    .hero-logo {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(36px, 8vw, 68px);
+      font-weight: 700;
+      color: var(--cream);
+      line-height: 1;
+      margin-bottom: 10px;
+      text-shadow: 0 4px 40px rgba(201,168,76,0.25);
+    }
+    .hero-logo span { color: var(--gold); }
+
+    .hero-tagline {
+      font-family: 'Crimson Text', serif;
+      font-size: 18px;
+      font-style: italic;
+      color: var(--warm);
+      margin-bottom: 32px;
+      opacity: 0.8;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+    }
+    .hero-stat strong {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      color: var(--gold);
+    }
+    .hero-stat span {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ══ TOP NAV BAR ══ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(19,15,8,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 62px;
+    }
+
+    .topbar-logo {
+      font-family: 'Cinzel', serif;
+      font-size: 15px;
+      color: var(--gold);
+      white-space: nowrap;
+      margin-right: 8px;
+    }
+
+    /* search */
+    .search-wrap {
+      flex: 1;
+      position: relative;
+    }
+    .search-wrap input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 16px 9px 38px;
+      font-size: 13px;
+      color: var(--cream);
+      font-family: 'Lato', sans-serif;
+      outline: none;
+      transition: border-color var(--trans);
+    }
+    .search-wrap input::placeholder { color: var(--muted); }
+    .search-wrap input:focus { border-color: rgba(201,168,76,0.4); }
+    .search-wrap .search-icon {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      pointer-events: none;
+      color: var(--muted);
+    }
+
+    /* filter toggle */
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--warm);
+      font-size: 12px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-family: 'Lato', sans-serif;
+      white-space: nowrap;
+      transition: all var(--trans);
+    }
+    .filter-btn.active {
+      background: rgba(122,22,40,0.35);
+      border-color: var(--burgundy);
+      color: #f0a0b0;
+    }
+    .filter-btn:hover:not(.active) { border-color: rgba(201,168,76,0.3); }
+
+    /* cart button */
+    .cart-btn {
+      position: relative;
+      background: var(--burgundy);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-family: 'Lato', sans-serif;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background var(--trans);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cart-btn:hover { background: var(--burg-lt); }
+    .cart-badge {
+      position: absolute;
+      top: -6px; right: -6px;
+      background: var(--gold);
+      color: var(--bg);
+      font-size: 10px;
+      font-weight: 700;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      display: none;
+    }
+    .cart-badge.show { display: flex; }
+
+    /* ══ CATEGORY TABS ══ */
+    .cat-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+
+    .cat-tab {
+      padding: 16px 22px;
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all var(--trans);
+      background: none;
+      border-left: none;
+      border-right: none;
+      border-top: none;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .cat-tab:hover { color: var(--warm); }
+    .cat-tab.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+    .cat-tab .tab-icon { font-size: 16px; }
+
+    /* ══ MAIN LAYOUT ══ */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* section heading */
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-head h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      color: var(--gold-lt);
+    }
+    .section-head p {
+      font-family: 'Crimson Text', serif;
+      font-style: italic;
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .item-count {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 4px 10px;
+      background: var(--surface);
+      border-radius: 50px;
+      border: 1px solid var(--border);
+    }
+
+    /* ══ MENU GRID ══ */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .menu-section { display: none; }
+    .menu-section.active { display: block; }
+
+    /* ══ MENU CARD ══ */
+    .menu-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+      cursor: pointer;
+      transition: transform var(--trans), border-color var(--trans), box-shadow var(--trans);
+      position: relative;
+      overflow: hidden;
+    }
+    .menu-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(201,168,76,0.04), transparent);
+      opacity: 0;
+      transition: opacity var(--trans);
+    }
+    .menu-card:hover { transform: translateY(-3px); border-color: rgba(201,168,76,0.3); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .menu-card:hover::before { opacity: 1; }
+
+    .card-emoji {
+      width: 72px; height: 72px;
+      min-width: 72px;
+      background: var(--surface2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      border: 1px solid var(--border);
+      transition: transform var(--trans);
+    }
+    .menu-card:hover .card-emoji { transform: scale(1.08); }
+
+    .card-body { flex: 1; min-width: 0; }
+
+    .card-tags {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 50px;
+      font-weight: 700;
+    }
+    .tag-veg    { background: rgba(80,160,80,0.2);  color: #80d080; border: 1px solid rgba(80,160,80,0.3); }
+    .tag-spicy  { background: rgba(220,60,40,0.2);  color: #f08070; border: 1px solid rgba(220,60,40,0.3); }
+    .tag-new    { background: rgba(201,168,76,0.2); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+    .tag-popular{ background: rgba(122,22,40,0.3);  color: #e8a0b0; border: 1px solid rgba(122,22,40,0.5); }
+    .tag-gf     { background: rgba(100,160,220,0.2);color: #90c8f8; border: 1px solid rgba(100,160,220,0.3); }
+
+    .card-name {
+      font-family: 'Crimson Text', serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--cream);
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-price {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      color: var(--gold);
+    }
+    .card-price .currency { font-size: 11px; vertical-align: top; margin-top: 3px; display: inline-block; }
+
+    .add-btn {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--burgundy);
+      border: none;
+      color: #fff;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background var(--trans), transform 0.15s;
+    }
+    .add-btn:hover  { background: var(--burg-lt); }
+    .add-btn:active { transform: scale(0.9); }
+    .add-btn.added  { background: rgba(80,160,80,0.4); font-size: 14px; }
+
+    /* qty control */
+    .qty-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .qty-ctrl button {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--cream);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--trans);
+    }
+    .qty-ctrl button:hover { border-color: var(--gold); color: var(--gold); }
+    .qty-ctrl .qty { font-size: 14px; min-width: 18px; text-align: center; font-weight: 700; color: var(--gold); }
+
+    /* no-results */
+    .no-results {
+      text-align: center;
+      padding: 60px;
+      color: var(--muted);
+      font-family: 'Crimson Text', serif;
+      font-style: italic;
+      font-size: 18px;
+      display: none;
+    }
+    .no-results.show { display: block; }
+
+    /* ══ CART DRAWER ══ */
+    .cart-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--trans);
+    }
+    .cart-overlay.open { opacity: 1; pointer-events: all; }
+
+    .cart-drawer {
+      position: fixed;
+      top: 0; right: 0;
+      width: 360px;
+      height: 100%;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      z-index: 301;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+    }
+    .cart-drawer.open { transform: translateX(0); }
+
+    .cart-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cart-header h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 15px;
+      color: var(--gold-lt);
+    }
+    .cart-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      transition: color var(--trans);
+    }
+    .cart-close:hover { color: var(--cream); }
+
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px;
+      scrollbar-width: thin;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      animation: slide-in 0.25s ease;
+    }
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .ci-emoji { font-size: 26px; min-width: 36px; text-align: center; }
+    .ci-info  { flex: 1; min-width: 0; }
+    .ci-name  { font-size: 13px; color: var(--cream); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ci-price { font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold); }
+    .ci-qty   {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px;
+    }
+    .ci-qty button {
+      width: 22px; height: 22px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--cream);
+      cursor: pointer;
+      font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ci-qty button:hover { border-color: var(--gold); color: var(--gold); }
+    .ci-qty .n { min-width: 14px; text-align: center; font-weight: 700; color: var(--gold); }
+
+    .cart-empty {
+      text-align: center;
+      padding: 60px 20px;
+      font-family: 'Crimson Text', serif;
+      font-style: italic;
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .cart-empty .big { font-size: 48px; display: block; margin-bottom: 12px; }
+
+    .cart-footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 24px;
+    }
+    .cart-summary { margin-bottom: 16px; }
+    .cart-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .cart-row.total {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      color: var(--gold-lt);
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .checkout-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--burgundy), #5a0e1e);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      padding: 15px;
+      cursor: pointer;
+      transition: opacity var(--trans), transform 0.15s;
+    }
+    .checkout-btn:hover  { opacity: 0.88; }
+    .checkout-btn:active { transform: scale(0.98); }
+
+    /* toast */
+    .toast {
+      position: fixed;
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface2);
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--cream);
+      font-size: 13px;
+      padding: 11px 22px;
+      border-radius: 50px;
+      opacity: 0;
+      transition: all 0.35s;
+      z-index: 500;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ══ Responsive ══ */
+    @media (max-width: 600px) {
+      .hero-stats  { gap: 20px; }
+      .topbar-logo { display: none; }
+      .cart-drawer { width: 100%; }
+      .menu-grid   { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Ember Particles ── -->
+<div class="embers" id="embers"></div>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">✦ Fine Dining · Est. 2018 ✦</div>
+    <div class="hero-logo">Ember <span>&</span> Oak</div>
+    <div class="hero-tagline">Wood-fired flavours, sourced from the earth</div>
+    <div class="hero-stats">
+      <div class="hero-stat"><strong>48</strong><span>Dishes</span></div>
+      <div class="hero-stat"><strong>4.9★</strong><span>Rating</span></div>
+      <div class="hero-stat"><strong>25m</strong><span>Avg Wait</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOP BAR ── -->
+<div class="topbar">
+  <div class="topbar-logo">Ember & Oak</div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search dishes…" oninput="handleSearch()" />
+  </div>
+  <button class="filter-btn" id="vegFilter" onclick="toggleVeg()">🌿 Veg Only</button>
+  <button class="cart-btn" onclick="openCart()">
+    🛒 Cart
+    <div class="cart-badge" id="cartBadge">0</div>
+  </button>
+</div>
+
+<!-- ── CATEGORY TABS ── -->
+<div class="cat-tabs" id="catTabs">
+  <button class="cat-tab active" onclick="showCat('starters',this)"><span class="tab-icon">🥗</span>Starters</button>
+  <button class="cat-tab" onclick="showCat('mains',this)"><span class="tab-icon">🍖</span>Mains</button>
+  <button class="cat-tab" onclick="showCat('sides',this)"><span class="tab-icon">🥔</span>Sides</button>
+  <button class="cat-tab" onclick="showCat('desserts',this)"><span class="tab-icon">🍮</span>Desserts</button>
+  <button class="cat-tab" onclick="showCat('drinks',this)"><span class="tab-icon">🍷</span>Drinks</button>
+</div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+
+  <!-- STARTERS -->
+  <div class="menu-section active" id="sec-starters">
+    <div class="section-head">
+      <div><h2>Starters</h2><p>Begin your journey with something exceptional</p></div>
+      <span class="item-count" id="cnt-starters">6 items</span>
+    </div>
+    <div class="menu-grid" id="grid-starters"></div>
+  </div>
+
+  <!-- MAINS -->
+  <div class="menu-section" id="sec-mains">
+    <div class="section-head">
+      <div><h2>Main Course</h2><p>Hearty wood-fired masterpieces</p></div>
+      <span class="item-count" id="cnt-mains">8 items</span>
+    </div>
+    <div class="menu-grid" id="grid-mains"></div>
+  </div>
+
+  <!-- SIDES -->
+  <div class="menu-section" id="sec-sides">
+    <div class="section-head">
+      <div><h2>Sides</h2><p>The perfect companions</p></div>
+      <span class="item-count" id="cnt-sides">4 items</span>
+    </div>
+    <div class="menu-grid" id="grid-sides"></div>
+  </div>
+
+  <!-- DESSERTS -->
+  <div class="menu-section" id="sec-desserts">
+    <div class="section-head">
+      <div><h2>Desserts</h2><p>A sweet finale worth waiting for</p></div>
+      <span class="item-count" id="cnt-desserts">5 items</span>
+    </div>
+    <div class="menu-grid" id="grid-desserts"></div>
+  </div>
+
+  <!-- DRINKS -->
+  <div class="menu-section" id="sec-drinks">
+    <div class="section-head">
+      <div><h2>Drinks</h2><p>Curated cellar & craft selections</p></div>
+      <span class="item-count" id="cnt-drinks">5 items</span>
+    </div>
+    <div class="menu-grid" id="grid-drinks"></div>
+  </div>
+
+  <div class="no-results" id="noResults">✦ No dishes found. Try a different search.</div>
+</div>
+
+<!-- ── CART DRAWER ── -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h3>🛒 Your Order</h3>
+    <button class="cart-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty"><span class="big">🍽</span>Your cart is empty.<br/>Add something delicious!</div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-summary">
+      <div class="cart-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+      <div class="cart-row"><span>Service (10%)</span><span id="service">$0.00</span></div>
+      <div class="cart-row total"><span>Total</span><span id="totalAmt">$0.00</span></div>
+    </div>
+    <button class="checkout-btn" onclick="checkout()">Place Order →</button>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══ MENU DATA ══ */
+const menuData = {
+  starters: [
+    { id:1,  name: 'Ember-Smoked Burrata',   emoji:'🧀', price:14.5, desc:'Creamy burrata, heritage tomatoes, basil oil & charred sourdough crisps.',               tags:['veg','new'] },
+    { id:2,  name: 'Oak-Cured Salmon Tataki',emoji:'🐟', price:16,   desc:'Thin-sliced salmon, citrus ponzu, micro herbs & toasted sesame.',                        tags:['gf'] },
+    { id:3,  name: 'Wild Mushroom Crostini',  emoji:'🍄', price:12,   desc:'Sautéed wild mushrooms, truffle cream, aged parmesan on grilled bread.',                tags:['veg'] },
+    { id:4,  name: 'Spiced Lamb Kofta',       emoji:'🥩', price:15,   desc:'Hand-rolled lamb kofta, harissa yoghurt, pomegranate & fresh mint.',                    tags:['spicy','popular'] },
+    { id:5,  name: 'Roasted Beetroot Salad',  emoji:'🥗', price:11,   desc:'Honey-roasted beets, whipped goat cheese, candied walnuts & aged balsamic.',            tags:['veg','gf'] },
+    { id:6,  name: 'Crispy Calamari',         emoji:'🦑', price:13.5, desc:'Lightly dusted calamari, saffron aioli, lemon & fresh chilli flakes.',                  tags:['spicy'] },
+  ],
+  mains: [
+    { id:7,  name: 'Dry-Aged Ribeye',         emoji:'🥩', price:48,   desc:'300g 35-day aged ribeye, bone marrow butter, watercress & hand-cut chips.',             tags:['popular','gf'] },
+    { id:8,  name: 'Whole Grilled Sea Bass',  emoji:'🐠', price:36,   desc:'Line-caught sea bass, fennel, capers, brown butter & charred lemon.',                   tags:['gf','new'] },
+    { id:9,  name: 'Truffle Mushroom Risotto',emoji:'🍚', price:26,   desc:'Arborio rice, wild mushrooms, black truffle, aged parmigiano-reggiano.',                tags:['veg','popular'] },
+    { id:10, name: 'Oak-Roasted Duck Breast', emoji:'🦆', price:38,   desc:'Crispy duck, cherry gastrique, creamed celeriac & wilted greens.',                      tags:['new'] },
+    { id:11, name: 'Harissa Lamb Shoulder',   emoji:'🍖', price:42,   desc:'Slow-roasted shoulder, saffron couscous, tzatziki & herb chimichurri.',                 tags:['spicy','gf'] },
+    { id:12, name: 'Lobster Linguine',         emoji:'🦞', price:44,   desc:'Fresh lobster, cherry tomato, chilli, white wine & hand-made pasta.',                  tags:['spicy','popular'] },
+    { id:13, name: 'Charred Cauliflower Steak',emoji:'🥦', price:24,  desc:'Whole roasted cauliflower, miso glaze, pickled raisins & almond crumb.',                tags:['veg','gf'] },
+    { id:14, name: 'Pork Belly Confit',        emoji:'🥓', price:34,  desc:'48-hour confit belly, apple purée, black pudding crumb & crackling.',                   tags:['popular'] },
+  ],
+  sides: [
+    { id:15, name: 'Truffle Parmesan Fries',  emoji:'🍟', price:9,    desc:'Double-fried frites, black truffle oil, shaved parmigiano & sea salt.',                tags:['veg','popular'] },
+    { id:16, name: 'Honey-Glazed Carrots',    emoji:'🥕', price:7,    desc:'Roasted rainbow carrots, thyme honey, toasted hazelnuts & za\'atar.',                   tags:['veg','gf'] },
+    { id:17, name: 'Creamed Spinach',         emoji:'🌿', price:8,    desc:'Wilted baby spinach, nutmeg cream, crispy shallots & aged gruyère.',                    tags:['veg','gf'] },
+    { id:18, name: 'Duck Fat Potatoes',       emoji:'🥔', price:9.5,  desc:'Potatoes roasted in duck fat, rosemary, sea salt & garlic confit.',                     tags:['popular'] },
+  ],
+  desserts: [
+    { id:19, name: 'Valrhona Chocolate Fondant',emoji:'🍫', price:13, desc:'Warm 70% dark chocolate fondant, vanilla bean ice cream & gold leaf.',                  tags:['veg','popular'] },
+    { id:20, name: 'Lemon Tart Brûlée',        emoji:'🍋', price:11,  desc:'Sharp lemon curd, Italian meringue torched tableside & raspberry coulis.',              tags:['veg','new'] },
+    { id:21, name: 'Sticky Toffee Pudding',    emoji:'🍮', price:12,  desc:'Date sponge, salted toffee sauce, clotted cream & crushed honeycomb.',                  tags:['veg','popular'] },
+    { id:22, name: 'Pear & Almond Tart',       emoji:'🍐', price:10,  desc:'Poached pear, frangipane, flaked almonds & caramel crème anglaise.',                   tags:['veg'] },
+    { id:23, name: 'Artisan Cheese Board',     emoji:'🧀', price:18,  desc:'Selection of 5 farmhouse cheeses, quince, walnuts & house-made crackers.',             tags:['veg','gf'] },
+  ],
+  drinks: [
+    { id:24, name: 'Ember Signature Cocktail', emoji:'🍸', price:14,  desc:'Mezcal, smoked rosemary, honey shrub, lemon & activated charcoal salt rim.',           tags:['new','popular'] },
+    { id:25, name: 'Château Margaux 2018',     emoji:'🍷', price:22,  desc:'Full-bodied Bordeaux blend, notes of dark cherry, tobacco & cedar.',                   tags:[] },
+    { id:26, name: 'Craft Pale Ale',           emoji:'🍺', price:8,   desc:'House-partnered brewery, citrus-forward hops, light malt & a crisp finish.',           tags:[] },
+    { id:27, name: 'Elderflower Spritz',       emoji:'🥂', price:9,   desc:'Sparkling elderflower, cucumber, fresh mint & prosecco on ice.',                       tags:['veg','popular'] },
+    { id:28, name: 'Cold-Brew Coffee',         emoji:'☕', price:6,   desc:'24-hour cold-brew concentrate, oat milk & Madagascar vanilla syrup.',                  tags:['veg','gf'] },
+  ]
+};
+
+/* ══ STATE ══ */
+const cart   = {};
+let vegOnly  = false;
+let activeSection = 'starters';
+
+/* ══ RENDER ALL ══ */
+function renderAll() {
+  Object.entries(menuData).forEach(([cat, items]) => renderSection(cat, items));
+}
+
+function renderSection(cat, items) {
+  const grid = document.getElementById('grid-' + cat);
+  const filtered = applyFilters(items);
+  document.getElementById('cnt-' + cat).textContent = filtered.length + ' items';
+  grid.innerHTML = filtered.map(item => cardHTML(item)).join('');
+}
+
+function applyFilters(items) {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  return items.filter(i => {
+    const matchVeg  = !vegOnly || i.tags.includes('veg');
+    const matchSearch = !q || i.name.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q);
+    return matchVeg && matchSearch;
+  });
+}
+
+function cardHTML(item) {
+  const qty   = cart[item.id]?.qty || 0;
+  const thtml = item.tags.map(t => `<span class="tag tag-${t}">${tagLabel(t)}</span>`).join('');
+  const ctrl  = qty > 0
+    ? `<div class="qty-ctrl">
+         <button onclick="changeQty(${item.id},-1,event)">−</button>
+         <span class="qty">${qty}</span>
+         <button onclick="changeQty(${item.id},1,event)">+</button>
+       </div>`
+    : `<button class="add-btn" onclick="addItem(${item.id},event)">+</button>`;
+  return `
+    <div class="menu-card" id="card-${item.id}">
+      <div class="card-emoji">${item.emoji}</div>
+      <div class="card-body">
+        <div class="card-tags">${thtml}</div>
+        <div class="card-name">${item.name}</div>
+        <div class="card-desc">${item.desc}</div>
+        <div class="card-footer">
+          <div class="card-price"><span class="currency">$</span>${item.price.toFixed(2)}</div>
+          ${ctrl}
+        </div>
+      </div>
+    </div>`;
+}
+
+function tagLabel(t) {
+  return {veg:'🌿 Veg', spicy:'🌶 Spicy', new:'✦ New', popular:'🔥 Popular', gf:'🌾 GF'}[t] || t;
+}
+
+/* ══ CATEGORY SWITCH ══ */
+function showCat(cat, btn) {
+  document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + cat).classList.add('active');
+  btn.classList.add('active');
+  activeSection = cat;
+  checkNoResults();
+}
+
+/* ══ SEARCH ══ */
+function handleSearch() {
+  renderAll();
+  checkNoResults();
+}
+
+function checkNoResults() {
+  const section = menuData[activeSection];
+  const filtered = applyFilters(section);
+  document.getElementById('noResults').classList.toggle('show', filtered.length === 0);
+}
+
+/* ══ VEG FILTER ══ */
+function toggleVeg() {
+  vegOnly = !vegOnly;
+  document.getElementById('vegFilter').classList.toggle('active', vegOnly);
+  renderAll();
+  checkNoResults();
+}
+
+/* ══ CART LOGIC ══ */
+function allItems() {
+  return Object.values(menuData).flat();
+}
+function findItem(id) {
+  return allItems().find(i => i.id === id);
+}
+
+function addItem(id, e) {
+  e && e.stopPropagation();
+  const item = findItem(id);
+  cart[id] = { ...item, qty: 1 };
+  refreshCard(id);
+  updateCartBadge();
+  showToast('✦ ' + item.name + ' added');
+}
+
+function changeQty(id, delta, e) {
+  e && e.stopPropagation();
+  if (!cart[id]) return;
+  cart[id].qty += delta;
+  if (cart[id].qty <= 0) delete cart[id];
+  refreshCard(id);
+  updateCartBadge();
+  if (document.getElementById('cartDrawer').classList.contains('open')) renderCartItems();
+}
+
+function refreshCard(id) {
+  const item = findItem(id);
+  const card = document.getElementById('card-' + id);
+  if (!card) return;
+  const qty = cart[id]?.qty || 0;
+  const footer = card.querySelector('.card-footer');
+  const existing = footer.querySelector('.qty-ctrl, .add-btn');
+  if (existing) existing.remove();
+  const ctrl = document.createElement('div');
+  ctrl.innerHTML = qty > 0
+    ? `<div class="qty-ctrl">
+         <button onclick="changeQty(${id},-1,event)">−</button>
+         <span class="qty">${qty}</span>
+         <button onclick="changeQty(${id},1,event)">+</button>
+       </div>`
+    : `<button class="add-btn" onclick="addItem(${id},event)">+</button>`;
+  footer.appendChild(ctrl.firstElementChild);
+}
+
+function updateCartBadge() {
+  const total = Object.values(cart).reduce((s, i) => s + i.qty, 0);
+  const badge = document.getElementById('cartBadge');
+  badge.textContent = total;
+  badge.classList.toggle('show', total > 0);
+}
+
+/* ══ CART DRAWER ══ */
+function openCart() {
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartDrawer').classList.add('open');
+  renderCartItems();
+}
+function closeCart() {
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.getElementById('cartDrawer').classList.remove('open');
+}
+
+function renderCartItems() {
+  const container = document.getElementById('cartItems');
+  const footer    = document.getElementById('cartFooter');
+  const items     = Object.values(cart);
+
+  if (!items.length) {
+    container.innerHTML = '<div class="cart-empty"><span class="big">🍽</span>Your cart is empty.<br/>Add something delicious!</div>';
+    footer.style.display = 'none';
+    return;
+  }
+
+  container.innerHTML = items.map(i => `
+    <div class="cart-item">
+      <div class="ci-emoji">${i.emoji}</div>
+      <div class="ci-info">
+        <div class="ci-name">${i.name}</div>
+        <div class="ci-price">$${(i.price * i.qty).toFixed(2)}</div>
+      </div>
+      <div class="ci-qty">
+        <button onclick="ciChange(${i.id},-1)">−</button>
+        <span class="n">${i.qty}</span>
+        <button onclick="ciChange(${i.id},1)">+</button>
+      </div>
+    </div>`).join('');
+
+  const sub  = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const svc  = sub * 0.1;
+  document.getElementById('subtotal').textContent = '$' + sub.toFixed(2);
+  document.getElementById('service').textContent  = '$' + svc.toFixed(2);
+  document.getElementById('totalAmt').textContent = '$' + (sub + svc).toFixed(2);
+  footer.style.display = 'block';
+}
+
+function ciChange(id, delta) {
+  if (!cart[id]) return;
+  cart[id].qty += delta;
+  if (cart[id].qty <= 0) delete cart[id];
+  refreshCard(id);
+  updateCartBadge();
+  renderCartItems();
+}
+
+function checkout() {
+  showToast('✦ Order placed! Table service incoming 🍽');
+  Object.keys(cart).forEach(k => delete cart[k]);
+  updateCartBadge();
+  renderAll();
+  closeCart();
+}
+
+/* ══ TOAST ══ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ══ EMBER PARTICLES ══ */
+function spawnEmbers() {
+  const wrap = document.getElementById('embers');
+  for (let i = 0; i < 18; i++) {
+    const e = document.createElement('div');
+    e.className = 'ember';
+    const size = Math.random() * 3 + 1;
+    e.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random() * 100}%;
+      bottom:${Math.random() * 300}px;
+      --dur:${Math.random() * 5 + 4}s;
+      --delay:${Math.random() * 6}s;
+    `;
+    wrap.appendChild(e);
+  }
+}
+
+/* ══ INIT ══ */
+spawnEmbers();
+renderAll();
+</script>
+</body>
+</html>
